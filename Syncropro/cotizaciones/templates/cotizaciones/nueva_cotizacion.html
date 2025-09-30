@@ -1,0 +1,179 @@
+{% extends 'autenticacion/dashboard.html' %}
+{% block title %}Nueva Cotización - SynCroPro{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi bi-plus-circle me-2"></i> Nueva Cotización</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" id="cotizacionForm">
+                {% csrf_token %}
+
+                {% if form.errors or formset.non_form_errors %}
+                <div class="alert alert-danger">
+                    <strong>Errores en el formulario:</strong>
+                    <ul>
+                        {% for field in form %}{% if field.errors %}<li>{{ field.label }}: {{ field.errors|join:", " }}</li>{% endif %}{% endfor %}
+                        {% for error in formset.non_form_errors %}<li>{{ error }}</li>{% endfor %}
+                        {% for form_in_formset in formset %}{% for field in form_in_formset %}{% if field.errors %}<li>{{ field.label }}: {{ field.errors|join:", " }}</li>{% endif %}{% endfor %}{% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                <div class="card mb-4">
+                    <div class="card-header bg-light"><h6 class="mb-0">Datos del Cliente</h6></div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3"><label class="form-label">Número de Cotización</label>{{ form.numero }}</div>
+                            <div class="col-md-6 mb-3"><label class="form-label">Nombre del Cliente</label>{{ form.cliente_nombre }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3"><label class="form-label">Razón Social</label>{{ form.razon_social }}</div>
+                            <div class="col-md-6 mb-3"><label class="form-label">NIT</label>{{ form.nit }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3"><label class="form-label">Teléfono</label>{{ form.telefono }}</div>
+                            <div class="col-md-6 mb-3"><label class="form-label">Correo Electrónico</label>{{ form.correo_electronico }}</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3"><label class="form-label">Dirección</label>{{ form.direccion }}</div>
+                            <div class="col-md-6 mb-3"><label class="form-label">Descripción</label>{{ form.descripcion }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header bg-light"><h6 class="mb-0">Información del Tablero</h6></div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 mb-3"><label class="form-label">Valor Tablero</label>{{ form.valor_tablero }}</div>
+                            <div class="col-md-4 mb-3"><label class="form-label">Descuento Tablero (%)</label>{{ form.descuento_tablero }}</div>
+                            <div class="col-md-4 mb-3"><label class="form-label">Descuento Materiales (%)</label>{{ form.descuento_materiales }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center"><h6 class="mb-0">Materiales</h6>
+                        <button type="button" class="btn btn-success btn-sm" id="add-material"><i class="bi bi-plus-circle"></i> Agregar Material</button>
+                    </div>
+                    <div class="card-body">
+                        {{ formset.management_form }}
+                        <div id="materiales-formset">
+                            {% for form in formset %}
+                                <div class="card mb-3 material-form p-3">
+                                    <div class="row">
+                                        <div class="col-md-5 mb-2"><label class="form-label">Nombre del material</label>{{ form.nombre }}</div>
+                                        <div class="col-md-2 mb-2"><label class="form-label">Cantidad</label>{{ form.cantidad }}</div>
+                                        <div class="col-md-2 mb-2"><label class="form-label">Valor Unitario</label>{{ form.valor_unitario }}</div>
+                                        <div class="col-md-2 mb-2"><label class="form-label">Descuento (%)</label>{{ form.descuento }}</div>
+                                        <div class="col-md-1 d-flex align-items-end mb-2"><button type="button" class="btn btn-sm btn-outline-danger remove-material"><i class="bi bi-trash"></i></button></div>
+                                    </div>
+                                    {{ form.id }}{{ form.DELETE }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header bg-secondary text-white"><h6 class="mb-0">Resumen de la Cotización</h6></div>
+                    <div class="card-body">
+                        <div class="row"><div class="col-md-6 offset-md-3"><div class="table-responsive"><table class="table">
+                            <tbody>
+                                <tr><td class="fw-bold">Subtotal:</td><td class="text-end"><span id="subtotal">$0</span></td></tr>
+                                <tr><td class="fw-bold">IVA (19%):</td><td class="text-end"><span id="iva">$0</span></td></tr>
+                                <tr class="table-active"><td class="fw-bold">Total:</td><td class="text-end fw-bold text-primary"><span id="total">$0</span></td></tr>
+                            </tbody>
+                        </table></div></div></div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'cotizaciones:lista' %}" class="btn btn-secondary"><i class="bi bi-x-circle"></i> Cancelar</a>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Guardar Cotización</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<template id="empty-material-form">
+    <div class="card mb-3 material-form p-3">
+        <div class="row">
+            <div class="col-md-5 mb-2"><label class="form-label">Nombre del material</label><input type="text" name="materiales-__prefix__-nombre" class="form-control"></div>
+            <div class="col-md-2 mb-2"><label class="form-label">Cantidad</label><input type="number" name="materiales-__prefix__-cantidad" class="form-control" min="1" value="1"></div>
+            <div class="col-md-2 mb-2"><label class="form-label">Valor Unitario</label><input type="number" name="materiales-__prefix__-valor_unitario" class="form-control" step="1" min="0"></div>
+            <div class="col-md-2 mb-2"><label class="form-label">Descuento (%)</label><input type="number" name="materiales-__prefix__-descuento" class="form-control" step="1" min="0" max="100" value="0"></div>
+            <div class="col-md-1 d-flex align-items-end mb-2"><button type="button" class="btn btn-sm btn-outline-danger remove-material"><i class="bi bi-trash"></i></button></div>
+        </div>
+        <input type="hidden" name="materiales-__prefix__-id"><input type="hidden" name="materiales-__prefix__-DELETE">
+    </div>
+</template>
+
+<script>
+// --- formset dinámico ---
+const formsetDiv = document.getElementById("materiales-formset");
+const addButton = document.getElementById("add-material");
+const totalForms = document.getElementById("id_materiales-TOTAL_FORMS");
+const emptyFormTemplate = document.getElementById("empty-material-form");
+
+function updateFormsIndex() {
+    const forms = formsetDiv.querySelectorAll(".material-form");
+    totalForms.value = forms.length;
+    forms.forEach((form, index) => {
+        form.querySelectorAll("input,select,textarea").forEach(el => {
+            if (el.name) el.name = el.name.replace(/materiales-\d+-/, `materiales-${index}-`);
+            if (el.id) el.id = el.id.replace(/id_materiales-\d+-/, `id_materiales-${index}-`);
+        });
+    });
+}
+function addRemoveEventListeners() {
+    document.querySelectorAll(".remove-material").forEach(btn => {
+        btn.addEventListener("click", function() {
+            const form = this.closest(".material-form");
+            const deleteField = form.querySelector("input[name$='DELETE']");
+            if (deleteField) { deleteField.value = "on"; form.style.display = "none"; calcularTotales(); }
+            else { form.remove(); updateFormsIndex(); calcularTotales(); }
+        });
+    });
+}
+addButton.addEventListener("click", () => {
+    const total = parseInt(totalForms.value);
+    const newFormHtml = emptyFormTemplate.innerHTML.replace(/__prefix__/g, total);
+    const newForm = document.createElement("div"); newForm.innerHTML = newFormHtml;
+    formsetDiv.appendChild(newForm); totalForms.value = total + 1;
+    addRemoveEventListeners();
+    newForm.querySelectorAll("input").forEach(inp => inp.classList.add("calc-trigger"));
+    calcularTotales();
+});
+addRemoveEventListeners();
+
+// --- cálculo en tiempo real ---
+function formatoPesos(num) { return "$" + num.toLocaleString("es-CL"); }
+function calcularTotales() {
+    const valorTablero = parseInt(document.querySelector('input[name="valor_tablero"]').value) || 0;
+    const dtoTablero = parseInt(document.querySelector('input[name="descuento_tablero"]').value) || 0;
+    const subTablero = Math.floor(valorTablero * (100 - dtoTablero) / 100);
+    let subMat = 0;
+    document.querySelectorAll(".material-form").forEach(form => {
+        if (form.style.display === "none") return;
+        const cant = parseInt(form.querySelector('input[name$="-cantidad"]').value) || 0;
+        const vUnit = parseInt(form.querySelector('input[name$="-valor_unitario"]').value) || 0;
+        const dto = parseInt(form.querySelector('input[name$="-descuento"]').value) || 0;
+        subMat += Math.floor(cant * vUnit * (100 - dto) / 100);
+    });
+    const dtoMatGlobal = parseInt(document.querySelector('input[name="descuento_materiales"]').value) || 0;
+    subMat = Math.floor(subMat * (100 - dtoMatGlobal) / 100);
+    const subtotal = subTablero + subMat;
+    const iva = Math.floor(subtotal * 19 / 100);
+    const total = subtotal + iva;
+    document.getElementById("subtotal").textContent = formatoPesos(subtotal);
+    document.getElementById("iva").textContent = formatoPesos(iva);
+    document.getElementById("total").textContent = formatoPesos(total);
+}
+document.addEventListener("input", e => { if (e.target.classList.contains("calc-trigger")) calcularTotales(); });
+calcularTotales();
+</script>
+{% endblock %}

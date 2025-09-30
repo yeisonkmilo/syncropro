@@ -1,0 +1,78 @@
+{% extends "autenticacion/dashboard.html" %}
+{% block title %}Detalle Cotización #{{ cotizacion.numero }} - SynCroPro{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary">Cotización #{{ cotizacion.numero }}</h2>
+        <div>
+            <a href="{% url 'cotizaciones:editar' cotizacion.id %}" class="btn btn-warning me-2"><i class="bi bi-pencil"></i> Editar</a>
+            <a href="{% url 'cotizaciones:lista' %}" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Volver</a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white"><h5 class="mb-0"><i class="bi bi-person"></i> Datos del Cliente</h5></div>
+                <div class="card-body">
+                    <div class="row mb-2"><div class="col-4 fw-bold">Nombre:</div><div class="col-8">{{ cotizacion.cliente_nombre }}</div></div>
+                    <div class="row mb-2"><div class="col-4 fw-bold">Razón Social:</div><div class="col-8">{{ cotizacion.razon_social }}</div></div>
+                    <div class="row mb-2"><div class="col-4 fw-bold">NIT:</div><div class="col-8">{{ cotizacion.nit }}</div></div>
+                    <div class="row mb-2"><div class="col-4 fw-bold">Dirección:</div><div class="col-8">{{ cotizacion.direccion }}</div></div>
+                    <div class="row mb-2"><div class="col-4 fw-bold">Teléfono:</div><div class="col-8">{{ cotizacion.telefono }}</div></div>
+                    <div class="row mb-2"><div class="col-4 fw-bold">Email:</div><div class="col-8">{{ cotizacion.correo_electronico }}</div></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white"><h5 class="mb-0"><i class="bi bi-info-circle"></i> Información de la Cotización</h5></div>
+                <div class="card-body">
+                    <div class="row mb-2"><div class="col-4 fw-bold">Fecha:</div><div class="col-8">{{ cotizacion.fecha|date:"d/m/Y H:i" }}</div></div>
+                    <div class="row mb-2"><div class="col-4 fw-bold">Estado:</div><div class="col-8"><span class="badge bg-{% if cotizacion.estado == 'aprobada' %}success{% elif cotizacion.estado == 'rechazada' %}danger{% else %}warning{% endif %}">{{ cotizacion.get_estado_display }}</span></div></div>
+                    <div class="row mb-2"><div class="col-4 fw-bold">Descripción:</div><div class="col-8">{{ cotizacion.descripcion }}</div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-success text-white"><h5 class="mb-0"><i class="bi bi-box-seam"></i> Materiales</h5></div>
+        <div class="card-body">
+            {% if materiales %}
+            <div class="table-responsive"><table class="table table-striped"><thead><tr><th>Material</th><th>Cantidad</th><th>Valor Unitario</th><th>Descuento</th><th>Subtotal</th></tr></thead>
+                <tbody>
+                    {% for material in materiales %}<tr>
+                        <td>{{ material.nombre }}</td><td>{{ material.cantidad }}</td><td>${{ material.valor_unitario }}</td>
+                        <td>{{ material.descuento }}%</td><td>${{ material.subtotal }}</td>
+                    </tr>{% endfor %}
+                </tbody>
+            </table></div>
+            {% else %}<p class="text-muted">No hay materiales registrados.</p>{% endif %}
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-secondary text-white"><h5 class="mb-0"><i class="bi bi-calculator"></i> Totales</h5></div>
+        <div class="card-body">
+            <div class="row"><div class="col-md-6 offset-md-3"><div class="table-responsive"><table class="table">
+                <tbody>
+                    <tr><td class="fw-bold">Subtotal Tablero:</td><td class="text-end">${{ subtotal_tablero }}</td></tr>
+                    <tr><td class="fw-bold">Subtotal Materiales:</td><td class="text-end">${{ subtotal_materiales }}</td></tr>
+                    <tr><td class="fw-bold">Subtotal General:</td><td class="text-end">${{ subtotal }}</td></tr>
+                    <tr><td class="fw-bold">IVA (19%):</td><td class="text-end">${{ iva }}</td></tr>
+                    <tr class="table-active"><td class="fw-bold">Total:</td><td class="text-end fw-bold text-primary">${{ total }}</td></tr>
+                </tbody>
+            </table></div></div></div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between">
+        <a href="{% url 'cotizaciones:lista' %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Volver al Listado</a>
+        <div>
+            <a href="{% url 'cotizaciones:editar' cotizacion.pk %}" class="btn btn-warning me-2"><i class="bi bi-pencil"></i> Editar</a>
+            <a href="{% url 'cotizaciones:eliminar' cotizacion.pk %}" class="btn btn-danger"><i class="bi bi-trash"></i> Eliminar</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,234 @@
+{% extends 'autenticacion/dashboard.html' %}
+
+{% block title %}Editar Orden #{{ orden.numero }} - SynCroPro{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-lg">
+        <div class="card-header bg-warning text-white">
+            <h5 class="mb-0"><i class="bi bi-pencil"></i> Editar Orden #{{ orden.numero }}</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" id="orden-form" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <!-- Datos de la orden -->
+                <div class="card mb-4">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0">Datos de la Orden</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Número de orden</label>
+                                {{ form.numero }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Estado</label>
+                                {{ form.estado }}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Nombre del cliente</label>
+                                {{ form.cliente_nombre }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Razón social</label>
+                                {{ form.razon_social }}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">NIT</label>
+                                {{ form.nit }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Dirección</label>
+                                {{ form.direccion }}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Teléfono</label>
+                                {{ form.telefono }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Correo electrónico</label>
+                                {{ form.correo_electronico }}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Tipo de tablero</label>
+                                {{ form.tipo_tablero }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Dimensiones</label>
+                                {{ form.dimensiones }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Color</label>
+                                {{ form.color }}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Observaciones</label>
+                            {{ form.observaciones }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Cotización relacionada</label>
+                            {{ form.cotizacion }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Archivo adjunto (plano, imagen, PDF, etc.)</label>
+                            {{ form.archivo }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Materiales -->
+                <div class="card mb-4">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0">Materiales</h6>
+                    </div>
+                    <div class="card-body">
+                        {{ formset.management_form }}
+
+                        <div id="materiales-formset">
+                            {% for form in formset %}
+                                <div class="card mb-3 material-form p-3">
+                                    <div class="row">
+                                        <div class="col-md-8 mb-2">
+                                            <label class="form-label">Nombre del material</label>
+                                            {{ form.nombre }}
+                                        </div>
+                                        <div class="col-md-3 mb-2">
+                                            <label class="form-label">Cantidad</label>
+                                            {{ form.cantidad }}
+                                        </div>
+                                        <div class="col-md-1 d-flex align-items-end mb-2">
+                                            <button type="button" class="btn btn-sm btn-outline-danger remove-material">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Campos ocultos -->
+                                    {{ form.id }}
+                                    {{ form.DELETE }}
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <button type="button" class="btn btn-outline-primary mt-2" id="add-material">
+                            <i class="bi bi-plus-circle"></i> Agregar Material
+                        </button>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="{% url 'produccion:detalle' orden.pk %}" class="btn btn-secondary">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </a>
+                    <div>
+                        <button type="submit" class="btn btn-success me-2">
+                            <i class="bi bi-save"></i> Guardar Cambios
+                        </button>
+                        <a href="{% url 'produccion:lista' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-list"></i> Ver Listado
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Plantilla para nuevos formularios de materiales -->
+<template id="empty-material-form">
+    <div class="card mb-3 material-form p-3">
+        <div class="row">
+            <div class="col-md-8 mb-2">
+                <label class="form-label">Nombre del material</label>
+                <input type="text" name="materiales-__prefix__-nombre" class="form-control">
+            </div>
+            <div class="col-md-3 mb-2">
+                <label class="form-label">Cantidad</label>
+                <input type="number" name="materiales-__prefix__-cantidad" class="form-control" min="1" value="1">
+            </div>
+            <div class="col-md-1 d-flex align-items-end mb-2">
+                <button type="button" class="btn btn-sm btn-outline-danger remove-material">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Campos ocultos -->
+        <input type="hidden" name="materiales-__prefix__-id" id="id_materiales-__prefix__-id">
+        <input type="hidden" name="materiales-__prefix__-DELETE" id="id_materiales-__prefix__-DELETE">
+    </div>
+</template>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const formsetDiv = document.getElementById("materiales-formset");
+    const addButton = document.getElementById("add-material");
+    const totalForms = document.getElementById("id_materiales-TOTAL_FORMS");
+    const emptyFormTemplate = document.getElementById("empty-material-form");
+    
+    function updateFormsIndex() {
+        const forms = formsetDiv.querySelectorAll(".material-form");
+        totalForms.value = forms.length;
+        
+        forms.forEach((form, index) => {
+            form.querySelectorAll("input, select, textarea").forEach(el => {
+                if (el.name) {
+                    el.name = el.name.replace(/materiales-\d+-/, `materiales-${index}-`);
+                }
+                if (el.id) {
+                    el.id = el.id.replace(/id_materiales-\d+-/, `id_materiales-${index}-`);
+                }
+            });
+        });
+    }
+    
+    function addRemoveEventListeners() {
+        document.querySelectorAll(".remove-material").forEach(btn => {
+            btn.addEventListener("click", function() {
+                const form = this.closest(".material-form");
+                const deleteField = form.querySelector("input[name$='DELETE']");
+                
+                if (deleteField) {
+                    deleteField.value = "on";
+                    form.style.display = "none";
+                } else {
+                    form.remove();
+                    updateFormsIndex();
+                }
+            });
+        });
+    }
+    
+    addButton.addEventListener("click", function() {
+        const total = parseInt(totalForms.value);
+        const newFormHtml = emptyFormTemplate.innerHTML.replace(/__prefix__/g, total);
+        const newForm = document.createElement("div");
+        newForm.innerHTML = newFormHtml;
+        
+        formsetDiv.appendChild(newForm);
+        totalForms.value = total + 1;
+        addRemoveEventListeners();
+    });
+    
+    addRemoveEventListeners();
+});
+</script>
+{% endblock %}
